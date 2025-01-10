@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Linq;
 [CreateAssetMenu(fileName = "PlantList", menuName = "Plant System/Plant List")]
 public class PlantList : ScriptableObject
 {
-    public List<Plant> plants = new List<Plant>();
+    public List<Plant> plants;
 
     private void OnValidate()
     {
@@ -22,7 +23,7 @@ public class PlantList : ScriptableObject
     [ContextMenu("Import Plants from CSV")]
     private void ImportPlant()
     {
-        string filename = "Assets/plants.csv";
+        string filename = "Assets\\aGBa41nvksp.p";
 
         if (!File.Exists(filename))
         {
@@ -30,8 +31,7 @@ public class PlantList : ScriptableObject
             return;
         }
 
-        string[] lines = File.ReadAllLines(filename);
-
+        string[] lines = ReadSave(filename);
         plants.Clear();
 
         for (int i = 1; i < lines.Length; i++)
@@ -53,17 +53,32 @@ public class PlantList : ScriptableObject
                     durability = int.Parse(fields[2]),
                     speed = int.Parse(fields[3]),
                     defense = int.Parse(fields[4]),
-                    rarity = (Rarity)System.Enum.Parse(typeof(Rarity), fields[5]),
-                    type = (Type)System.Enum.Parse(typeof(Type), fields[6])
+                    rarity = (Rarity)Enum.Parse(typeof(Rarity), fields[5]),
+                    type = (Type)Enum.Parse(typeof(Type), fields[6])
                 };
 
                 newPlant.SetUp();
                 plants.Add(newPlant);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogError($"Error parsing line {i + 1}: {e.Message}");
             }
         }
+    }
+    
+    private static string[] ReadSave(string filename)
+    {
+        var lines = File.ReadAllLines(filename);
+        var data = new string[lines.Length];
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var base64EncodedBytes = Convert.FromBase64String(lines[i]);
+            var decodedText =  System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            data[i] = decodedText;
+        }
+
+        return data;
     }
 }
